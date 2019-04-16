@@ -632,6 +632,7 @@ void Solver::removeSatisfied(vec<CRef>& cs)
     int i, j;
     for (i = j = 0; i < cs.size(); i++){
         Clause& c = ca[cs[i]];
+        if (c.is_reason) continue;
         if (satisfied(c))
             removeClause(cs[i]);
         else{
@@ -659,6 +660,15 @@ void Solver::rebuildOrderHeap()
 }
 
 
+// This is similar to (un)protect_reasons() in CaDiCaL
+template <bool protectOrUnprotect> void Solver::protectReasons() {
+  for (auto i = 0, size = trail.size(); i < size; i++) {
+    const auto &v = vardata[var(trail[i])];
+    if (v.reason == CRef_Undef) continue;
+    ca[v.reason].is_reason = protectOrUnprotect;
+  }
+}
+
 /*_________________________________________________________________________________________________
 |
 |  simplify : [void]  ->  [bool]
@@ -677,6 +687,7 @@ bool Solver::simplify()
     if (nAssigns() == simpDB_assigns || (simpDB_props > 0))
         return true;
 
+    protectReasons<true>();
     // Remove satisfied clauses:
     removeSatisfied(learnts);
     if (remove_satisfied){       // Can be turned off.
@@ -705,6 +716,7 @@ bool Solver::simplify()
         append(released_vars, free_vars);
         released_vars.clear();
     }
+    protectReasons<false>();
     checkGarbage();
     rebuildOrderHeap();
 

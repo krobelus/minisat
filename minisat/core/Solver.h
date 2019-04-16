@@ -155,6 +155,7 @@ public:
     uint64_t dec_vars, num_clauses, num_learnts, clauses_literals, learnts_literals, max_literals, tot_literals;
 
 protected:
+    template<bool> void protectReasons();
 
     // Helper structures:
     //
