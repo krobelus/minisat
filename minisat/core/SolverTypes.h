@@ -143,7 +143,8 @@ class Clause {
         unsigned learnt    : 1;
         unsigned has_extra : 1;
         unsigned reloced   : 1;
-        unsigned size      : 27; }                        header;
+        unsigned is_reason : 1;
+        unsigned size      : 26; }                        header;
     union { Lit lit; float act; uint32_t abs; CRef rel; } data[0];
 
     friend class ClauseAllocator;
@@ -154,6 +155,7 @@ class Clause {
         header.learnt    = learnt;
         header.has_extra = use_extra;
         header.reloced   = 0;
+        header.is_reason = 0;
         header.size      = ps.size();
 
         for (int i = 0; i < ps.size(); i++) 
@@ -204,6 +206,9 @@ public:
     bool         reloced     ()      const   { return header.reloced; }
     CRef         relocation  ()      const   { return data[0].rel; }
     void         relocate    (CRef c)        { header.reloced = 1; data[0].rel = c; }
+
+    bool         is_reason   ()      const   { return header.is_reason; }
+    void         set_reason  ()              { header.is_reason = 1; }
 
     // NOTE: somewhat unsafe to change the clause in-place! Must manually call 'calcAbstraction' afterwards for
     //       subsumption operations to behave correctly.

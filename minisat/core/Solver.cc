@@ -678,6 +678,7 @@ bool Solver::simplify()
         return true;
 
     // Remove satisfied clauses:
+    protect_reasons();
     removeSatisfied(learnts);
     if (remove_satisfied){       // Can be turned off.
         removeSatisfied(clauses);

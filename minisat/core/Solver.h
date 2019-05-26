@@ -220,6 +220,22 @@ protected:
 
     vec<Var>            released_vars;
     vec<Var>            free_vars;
+    int                 unprotected_reason_index = 0;
+    void protect_reasons() {
+        assert(decisionLevel() == 0);
+        for (; unprotected_reason_index < trail.size(); unprotected_reason_index++) {
+            auto literal = trail[unprotected_reason_index];
+            if (literal == lit_Undef) continue;
+            CRef the_reason = reason(var(literal));
+            if (the_reason == CRef_Undef) continue;
+            ca[the_reason].set_reason();
+        }
+    }
+    bool want_to_remove_satisfied_clause(CRef cr) const {
+        assert(unprotected_reason_index == trail.size());
+        return not ca[cr].is_reason();
+    }
+
 
     // Temporaries (to reduce allocation overhead). Each variable is prefixed by the method in which it is
     // used, exept 'seen' wich is used in several places.
@@ -270,7 +286,7 @@ protected:
     void     attachClause     (CRef cr);               // Attach a clause to watcher lists.
     void     detachClause     (CRef cr, bool strict = false); // Detach a clause to watcher lists.
     void     removeClause     (CRef cr, bool emit_deletion = true);               // Detach and free a clause.
-    void     removeSatisfiedClause(CRef cr) { removeClause(cr, /*emit_deletion=*/false); }
+    void     removeSatisfiedClause(CRef cr) { removeClause(cr, /*emit_deletion=*/want_to_remove_satisfied_clause(cr)); }
     bool     isRemoved        (CRef cr) const;         // Test if a clause has been removed.
     bool     locked           (const Clause& c) const; // Returns TRUE if a clause is a reason for some implication in the current state.
     bool     satisfied        (const Clause& c) const; // Returns TRUE if a clause is satisfied in the current state.
