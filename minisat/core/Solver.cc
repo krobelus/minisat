@@ -230,10 +230,10 @@ void Solver::detachClause(CRef cr, bool strict){
 }
 
 
-void Solver::removeClause(CRef cr) {
+void Solver::removeClause(CRef cr, bool emit_deletion) {
     Clause& c = ca[cr];
 
-    if (output != NULL) {
+    if (output != NULL and emit_deletion) {
       fprintf(output, "d ");
       for (int i = 0; i < c.size(); i++)
         fprintf(output, "%i ", (var(c[i]) + 1) * (-2 * sign(c[i]) + 1));
@@ -633,7 +633,7 @@ void Solver::removeSatisfied(vec<CRef>& cs)
     for (i = j = 0; i < cs.size(); i++){
         Clause& c = ca[cs[i]];
         if (satisfied(c))
-            removeClause(cs[i]);
+            removeSatisfiedClause(cs[i]);
         else{
             // Trim clause:
             assert(value(c[0]) == l_Undef && value(c[1]) == l_Undef);
