@@ -633,7 +633,10 @@ void Solver::removeSatisfied(vec<CRef>& cs)
     for (i = j = 0; i < cs.size(); i++){
         Clause& c = ca[cs[i]];
         if (satisfied(c))
-            removeClause(cs[i]);
+            if (locked(c))
+                cs[j++] = cs[i];
+            else
+                removeClause(cs[i]);
         else{
             // Trim clause:
             assert(value(c[0]) == l_Undef && value(c[1]) == l_Undef);
